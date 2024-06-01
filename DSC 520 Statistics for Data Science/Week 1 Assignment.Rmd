@@ -1,0 +1,117 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+# Intro to R Assignment
+# DSC 520
+# Week 1
+# Statistics for Data Science Assignment Week 1
+# David Berberena
+# 12/3/2023
+
+# Assignment Start
+
+# Create function to print the Task 4 scenario and questions along with the
+# desired answers to those questions.
+
+task_4 <- function() {
+  
+  print("Task 4: Say I own 857 CDs. My friend has written a computer program")
+  print("that uses a webcam to scan the shelves in my house where I keep my CDs")
+  print("and measure how many I have. His program says that I have 863 CDs.")
+  print("Define measurement error. What is the measurement error in my friend’s CD-counting device?")
+  
+  print("Measurement error is the discrepancy between what is known to be true")
+  print("concerning the value of an entity being measured and the true value of")
+  print("that entity actually being measured in real time.")
+}
+
+# Create function to display the shape of a normal distribution
+# This function will use the dnorm() built-in function for distributions
+# seq() built-in function will define the parameters of the distributions
+# plot() built-in function will be used to sketch the shape of the distributions
+
+task_5_norm_dist <- function() {
+  
+  # length.out is a keyword that sets the total number of values present
+  
+  x <- seq(-3, 3, length.out = 100)
+  
+  # standardized values for mean and standard deviation to create the plot
+  
+  y <- dnorm(x, mean = 0, sd = 1)
+  
+  # Create a plot of the normal distribution using x and y as parameters
+  # type is included as a parameter so R knows to draw a line or "l"
+  
+  plot(x, y, type = "l")
+}
+
+# Create function to display the shape of a positively skewed distribution
+# This function will use the rgamma() built-in function for skewed distributions
+# The parameters of the positively skewed distribution plot will be stored in a variable
+# plot() built-in function will be used to sketch the shape of the distribution
+
+task_5_pos_dist <- function() {
+  
+  # Since this function will use rgamma() which generates random values, setting
+  # the seed needs to be done to have the same random values generate each time
+  # the code is run
+  # 123 is the standard value entered, but any number can be entered
+  
+  set.seed(123)
+  
+  # pos_skewed_values variable is created to capture the random values created
+  # by the rgamma() function
+  # rgamma() has two built-in parameters: shape and rate (values are set to 1
+  # each to plot high positive skewness)
+  
+  pos_skewed_values <- rgamma(100, shape = 1, rate = 1)
+  
+  # plot the positively skewed random distribution using the density() 
+  # built-in function and plot()
+  
+  plot(density(pos_skewed_values))
+}
+
+# Create function to display the shape of a negatively skewed distribution
+# This function will also use the rgamma() function for skewed distributions
+# The parameters of the negatively skewed distribution plot will be stored in a variable
+# plot() and density() functions will be used to sketch the shape of the distribution
+
+task_5_neg_dist <- function() {
+  
+  # Since this function will use rbeta() which generates random values, setting
+  # the seed needs to be done to have the same random values generate each time 
+  # the code is run
+  # 123 is the standard value entered, but any number can be entered
+  
+  set.seed(123)
+  
+  # neg_skewed_values variable is created to capture the random values created
+  # by the rbeta() function
+  # rbeta() has two built-in parameters: shape1 and shape2 (shape1 is set to 2
+  # and shape2 is set to 0.5 to illustrate high negative skewness)
+  
+  neg_skewed_values <- rbeta(100, shape1 = 2, shape2 = 0.5)
+  
+  # plot the negatively skewed random distribution using density() and plot()
+  
+  plot(density(neg_skewed_values))
+}
+
+# Create function to print the Task 5 instructions and answers
+
+task_5 <- function() {
+  
+  print("Task 5: Sketch the shape of a normal distribution, a positively skewed")
+  print("distribution and a negatively skewed distribution.")
+  task_5_norm_dist()
+  task_5_pos_dist()
+  task_5_neg_dist()
+}
+
+task_4()
+task_5()

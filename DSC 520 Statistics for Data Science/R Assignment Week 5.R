@@ -1,0 +1,127 @@
+# Housing Dataset Assignment
+# DSC 520
+# Week 5
+# Statistics for Data Science Assignment Week 5
+# David Berberena
+# 1/14/2024
+
+# Assignment Start
+
+# Upload readr library for file importing
+
+library(readr)
+
+# set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 520 Statistics for Data Science")
+
+# Import the converted Housing CSV file to view its properties
+
+housing <- read_csv("Housing.csv")
+
+# Upload dplyr library for data manipulation
+
+library(dplyr)
+
+# Using the dplyr package, use the 6 different operations to analyze/transform 
+# the data - GroupBy, Summarize, Mutate, Filter, Select, and Arrange – Remember
+# this isn’t just modifying data, you are learning about your data also – so 
+# play around and start to understand your dataset in more detail
+
+## Group_by() and Summarize() function will be used together in a pipe
+
+summary_grouped_data <- housing %>% group_by(year_built) %>% 
+  summarize(AvgSalePrice = mean(`Sale Price`), AvgSqFtLot = mean(sq_ft_lot))
+summary_grouped_data
+
+## Mutate() function will be used to create new column that adds 500 to the 
+## square_feet_total_living column to account for a garage
+
+mutated_data <- mutate(housing, square_feet_total_with_garage = 
+                         square_feet_total_living + 500)
+mutated_data
+
+## Filter() function will be used to filter rows where square_feet_total_living
+## is higher than 6000
+
+filtered_data <- filter(housing, square_feet_total_living > 6000)
+filtered_data
+
+## Select() function will be used on the filtered dataset to select sale price, 
+## square feet total living, and square foot lot only
+
+selected_data <- select(filtered_data, "Sale Price", "square_feet_total_living",
+                        "sq_ft_lot")
+selected_data
+
+## Arrange() function will be used on the selected dataset to arrange the 
+## square feet total living column in ascending order
+
+arranged_data <- arrange(selected_data, square_feet_total_living)
+arranged_data
+
+# Upload purrr package for data iteration
+
+library(purrr)
+
+# Using the purrr package – perform 2 functions on your dataset.  
+# You could use zip_n, keep, discard, compact, etc.
+
+## map_dbl() function can be used to compute the means of all numeric columns
+## and will return NA for those columns that are non-numeric
+
+## This output cannot be stored within a variable as some of the output comes
+## with warnings that return NA
+
+housing %>% map_dbl(mean)
+
+## discard_at() function will be used to discard columns whose length of 
+## characters is equal to a certain length (in this case the length is 8), which
+## eliminates the sitetype and bedrooms columns
+
+leftover_data <- housing %>% discard_at(~ nchar(.x) == 8)
+leftover_data
+
+# Use the cbind and rbind function on your dataset
+
+## To use the cbind() and rbind() functions, I will create an extremely small
+## subset of the data using some of the previous principles
+
+## cbind() function
+
+cbind_and_rbind_data <- filter(arranged_data, square_feet_total_living < 6030)
+
+add_column1 <- c(578, 632, 597)
+add_column2 <- c(867, 943, 885)
+
+cbind_data <- cbind(cbind_and_rbind_data, bedroom_sqft = add_column1, 
+                    kitchen_sqft = add_column2)
+cbind_data
+
+## rbind() function
+
+add_row1 = c(1674920, 6010, 90843)
+add_row2 = c(1737180, 6000, 89619)
+
+rbind_data <- rbind(cbind_and_rbind_data, add_row1, add_row2)
+rbind_data
+
+# Split a string, then concatenate the results back together
+
+## To extract a character vector from the dataset, it must be filtered even more
+
+short_filter <- head(filtered_data)
+chr_vector <- short_filter$postalctyn
+
+# Upload stringr library to perform string manipulation
+
+library(stringr)
+
+# String splitting
+
+split_string <- strsplit(chr_vector, split = "")
+split_string
+
+# String concatenation
+
+paste(split_string)

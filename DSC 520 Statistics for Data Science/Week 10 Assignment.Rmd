@@ -1,0 +1,165 @@
+---
+title: "Logistic Regression Assignment"
+author: "David Berberena"
+date: "02-18-2024"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Thoracic Surgery Data Binomial Logistic Regression
+
+```{r}
+# Assignment Start
+
+# Upload foreign library for ARFF file importing
+
+library(foreign)
+
+# Set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 520 Statistics for Data Science")
+
+# Import the ARFF file to view its properties
+
+Thoracic <- read.arff("ThoraricSurgery.arff")
+```
+
+### 1A. Fit a binary logistic regression model to the data set that predicts whether or not the patient survived for one year (the Risk1Y variable) after the surgery. Use the glm() function to perform the logistic regression. See Generalized Linear Models for an example. Include a summary using the summary() function in your results.
+
+```{r}
+# Load the caTools library to aid in splitting the Thoracic dataset for logistic
+# regression purposes by creating a training dataset and a test dataset
+
+library(caTools)
+
+# A seed must be set so that the data being split will be split the same each 
+# time the code is run and subsequent values will be consistent
+
+set.seed(123)
+
+# Split the data into a training dataset and a test dataset using the
+# sample.split() function in caTools and the subset() function with 80% of the
+# dataset being the training dataset and the other 20% being the test dataset
+
+split_data <- sample.split(Thoracic, SplitRatio = 0.8)
+training_data <- subset(Thoracic, split_data == "TRUE")
+test_data <- subset(Thoracic, split_data == "FALSE")
+
+# All categorical variables must be transformed into factors
+
+Thoracic$DGN <- as.factor(Thoracic$DGN)
+Thoracic$PRE6 <- as.factor(Thoracic$PRE6)
+Thoracic$PRE7 <- as.factor(Thoracic$PRE7)
+Thoracic$PRE8 <- as.factor(Thoracic$PRE8)
+Thoracic$PRE9 <- as.factor(Thoracic$PRE9)
+Thoracic$PRE10 <- as.factor(Thoracic$PRE10)
+Thoracic$PRE11 <- as.factor(Thoracic$PRE11)
+Thoracic$PRE14 <- as.factor(Thoracic$PRE14)
+Thoracic$PRE17 <- as.factor(Thoracic$PRE17)
+Thoracic$PRE19 <- as.factor(Thoracic$PRE19)
+Thoracic$PRE25 <- as.factor(Thoracic$PRE25)
+Thoracic$PRE30 <- as.factor(Thoracic$PRE30)
+Thoracic$PRE32 <- as.factor(Thoracic$PRE32)
+
+# Train the logistic regression model using the glm() function and the training 
+# dataset created earlier as the training_data variable
+
+binary_model <- glm(Risk1Yr ~ DGN + PRE4 + PRE5 + PRE6 + PRE7 + PRE8 + PRE9 + 
+                      PRE10 + PRE11 + PRE14 + PRE17 + PRE19 + PRE25 + PRE30
+                    + PRE32 + AGE, data = training_data, family = 'binomial')
+
+# Output the summary of the model with the summary() function
+
+summary(binary_model)
+```
+
+### 1B. According to the summary, which variables had the greatest effect on the survival rate?
+
+Looking at each variable outlined in the summary of the logistic regression model, there are three of the variables that are annotated with the 0.001 significance code symbol. These significance code symbols are an indicator that the variable has a large effect on the outcome variable, which in this case is the survival rate variable Risk1Yr. For a variable to be annotated with a significance code, the absolute value of the estimate coefficient must be large and the p-value must be small together. The variables with the greatest effect are PRE7, PRE9, and PRE17,  
+
+### 1C. To compute the accuracy of your model, use the dataset to predict the outcome variable. The percent of correct predictions is the accuracy of your model. What is the accuracy of your model?
+
+```{r}
+# Running the test dataset through the created model can be done using the 
+# predict() function with the type argument set to "response" for fitted values
+
+# When running this code before and after setting the seed, the number of levels
+# in the DGN variable had changed from when the model was trained to this point,
+# so I did some digging as to how to fix that, and I found that it was easiest 
+# to recall the levels of the training data variable used in the model and 
+# reassign those levels back to the variable using the levels() and factor() 
+# functions
+
+training_levels <- levels(binary_model$DGN)
+test_data$DGN <- factor(test_data$DGN, levels = training_levels)
+
+test_values <- predict(binary_model, test_data, type = "response")
+test_values <- predict(binary_model, training_data, type = "response")
+
+# To visualize the performance of the model in its running of the test data, we
+# will create a confusion matrix using the table() function
+
+confusion_matrix <- table(act_value=training_data$Risk1Yr, pred_value=test_values>0.5)
+confusion_matrix
+
+# To compute the accuracy from the confusion matrix, we can now apply the 
+# accuracy formula: the sum of the true positive and true negative values 
+# divided by the sum of all values (true positive, true negative, false 
+# positive, and false negative). This can be done here with the help of the 
+# sum() function and the diag() function
+
+model_accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+model_accuracy
+```
+The accuracy of the binary logistic regression model is a rounded 85.79%.
+
+# Binary Classifier Data Binomial Logistic Regression
+
+```{r}
+# Upload readr library for CSV file importing
+
+library(readr)
+
+# Import the Binary Classifier Data CSV file to view its properties
+
+binary_dataset <- read_csv("binary_classifier_data.csv", show_col_types = FALSE)
+```
+
+### 2A. Fit a logistic regression model to the binary-classifier-data.csv dataset. The dataset (found in binary-classifier-data.csv) contains three variables; label, x, and y. The label variable is either 0 or 1 and is the output we want to predict using the x and y variables.
+
+```{r}
+# To repeat the process of fitting a logistic regression model for this dataset,
+# I will be employing most all of the same coding techniques used above for the
+# first binomial logistic regression model
+
+set.seed(123)
+
+# When splitting the data, I needed to call the label outcome variable for 
+# sample.split() to function properly
+
+split_data2 <- sample.split(binary_dataset$label, SplitRatio = 0.8)
+training_data2 <- subset(binary_dataset, split_data2 == "TRUE")
+test_data2 <- subset(binary_dataset, split_data2 == "FALSE")
+
+binary_model2 <- glm(label ~ x + y, data = training_data2, family = 'binomial')
+
+summary(binary_model2)
+```
+### 2B. What is the accuracy of the logistic regression classifier?
+
+```{r}
+# The confusion matrix and accuracy will be realized the same way as above
+
+test_values2 <- predict(binary_model2, test_data2, type = "response")
+test_values2 <- predict(binary_model2, training_data2, type = "response")
+
+confusion_matrix2 <- table(act_value=training_data2$label, pred_value=test_values2>0.5)
+confusion_matrix2
+
+model_accuracy2 <- sum(diag(confusion_matrix2)) / sum(confusion_matrix2)
+model_accuracy2
+```
+The accuracy of the logistic regression classifier is a rounded 59.13%.
