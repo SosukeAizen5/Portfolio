@@ -1,0 +1,162 @@
+---
+title: "Charts Assignment"
+author: "David Berberena"
+date: "2024-06-05"
+output: pdf_document
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Charts Assignment
+
+```{r}
+# To craft the necessary charts, I will need to import my dataset, which I have
+# chosen to be the Obama Approval Ratings dataset from the Exercise 1.2 
+# Datasets file folder. I have saved that file to a CSV file and will read it 
+# in here using the readr library, which will be loaded now along with ggplot2,
+# one of the libraries I have chosen to use to output all of the visualizations 
+# needed: a bar chart, a stacked bar chart, a pie chart, a donut chart, and a 
+# line chart.
+
+# Upload readr library for file importing
+
+library(readr)
+library(ggplot2)
+
+# Set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 640 Data Presentation and Visualization")
+
+# Import the Obama Approval Ratings CSV file to view its properties. I have 
+# added the show_col_types argument and set it to False so that no unnecessary 
+# output is generated from a simple CSV file variable assignment.
+
+obama_ratings <- read_csv("obama-approval-ratings.csv", show_col_types = FALSE)
+
+# The head() function is used here to verify that the data has been loaded in
+# correctly.
+
+head(obama_ratings)
+```
+## Visualization 1: Bar Chart
+
+```{r}
+# For the bar chart, I will be highlighting the percentage of respondents who
+# approve of the issues Obama has addressed in the dataset. Using the ggplot()
+# function in ggplot2 with the geom_bar() customization function, I will craft a
+# horizontal bar chart as this chart work better to fully display the names of
+# the political issues within the Issues column. Using the reorder() function 
+# within the aes argument of the ggplot() constructor allows for the making 
+# of the horizontal over the standard vertical bar chart. I also needed to use 
+# the stat argument (set to identity) to ensure that the bars could be 
+# indicative of the actual percentage of approval. 
+
+ggplot(obama_ratings, aes(x = Approve, y = reorder(Issue, Approve))) +
+  geom_bar(stat = "identity", fill = "black") +
+  labs(title = "Obama Political Issue Approval Percentages",
+       x = "Percentage of Approval",
+       y = "Political Issue")
+```
+## Visualization 2: Stacked Bar Chart
+
+```{r}
+# In the previous bar chart, I only visualized the approval ratings for these
+# political issues. A stacked bar chart gives the opportunity to plot all three
+# ratings in one chart, one on top of the other. I will use the gather() 
+# function to change the dataset's format from wide to long, as stacked bar 
+# charts in R need the format of the data to fit along with the long format 
+# requirements of the chart. I need to load the tidyr library to use the 
+# gather() function, so I will load it below. The results are stored in a new 
+# variable, which is then used with the ggplot() function to create the stacked 
+# bar chart. The scale_fill_manual() function allows the assigning of labels to 
+# the stacked bars and colors to those labeled bars. For the names of the 
+# political issues not to run into each other, I found that within the theme() 
+# customization function of the plot, I can call the text within the x-axis and
+# adjust the angle of the issue names being displayed for a better visualization
+# by making the x-axis turn ninety degrees with the help of the element_text() 
+# argument. 
+
+library(tidyr)
+
+obama_ratings_long <- gather(obama_ratings, key = "Rating", value = "Percentage", Approve, Disapprove, None)
+
+ggplot(obama_ratings_long, aes(x = Issue, y = Percentage, fill = Rating)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Obama Political Issue Approval Percentages",
+       x = "Political Issue",
+       y = "Percentage") +
+  scale_fill_manual(values = c("Approve" = "black", "Disapprove" = "pink", "None" = "yellow")) + theme(axis.text.x = element_text(angle = 90))
+```
+## Visualization 3: Pie Chart
+
+```{r}
+# With the previous stacked bar chart, one could see the proportion of ratings 
+# across all political issues. However, it is difficult to discern the 
+# percentage of each rating as a whole in this way without the percentage being 
+# listed as a number as well as these statistics being in bar form along with many other bars. This is where a pie chart can come in handy, as 
+# I will create one that shows the proportion of ratings for one individual
+# issue, say the Race Relations issue. Storing the ratings of the Race Relations
+# issue in a variable requires me to locate those ratings using the $ operator. # I then can craft the pie chart using the pie() function, which is not part of # ggplot2 but of R in its base form. To display the rating percentages as labels
+# of the slices in the pie chart, I had to manually write the labels by calling 
+# each element of the label and concatenating the elements together with the 
+# paste() function. 
+
+race_relations <- obama_ratings[obama_ratings$Issue == "Race Relations", ]
+
+percent_labels <- paste(c("Approve", "Disapprove", "None"), c(race_relations$Approve, race_relations$Disapprove, race_relations$None), "%", sep = " ")
+
+pie(c(race_relations$Approve, race_relations$Disapprove, race_relations$None),
+  labels = percent_labels,
+  main = "Ratings Percentages for the Race Relations Political Issue",
+  col = c("gray", "yellow", "pink"))
+```
+## Visualization 4: Donut Chart
+
+```{r warning=FALSE}
+# In R, donut charts are harder to craft in base R and ggplot2, so I will load 
+# the plotly library, which contains the plot_ly() function which can handle 
+# crafting a donut chart with efficiency and ease. I will visualize the 
+# Immigration political issue from the Issue column using the same methodology 
+# as the previous pie chart, yet with the parameters being different. Using the 
+# add_pie() and layout() constructor functions within the plot_ly() function 
+# along with pipe operators, I have managed to make two pie charts with holes 
+# that when combined create a donut chart. I have included the legend using the 
+# showlegend argument of the layout() function.
+
+library(plotly)
+
+immigration <- obama_ratings[obama_ratings$Issue == "Immigration", ]
+
+percentages <- c(immigration$Approve, immigration$Disapprove, immigration$None)
+labels <- c("Approve", "Disapprove", "None")
+
+plot_ly(labels = labels, values = percentages, type = "pie", hole = 0.8) %>%
+  add_pie(labels = labels, values = percentages, hole = 0.6) %>%
+  layout(title = "Ratings Percentages for the Immigration Political Issue",
+         showlegend = TRUE)
+```
+## Visualization 5: Line Chart
+
+```{r}
+# Line charts are best used for time series data, yet we can also use a line 
+# chart here to show the ratings of each political issue. Using ggplot's 
+# geom_line() customization function on the long format data focusing 
+# specifically on the issue column will allow construction of the line chart to
+# output the rating percentages across all political issues. Once again the 
+# element_text() argument is set to the angle equaling ninety for ease of reading the x-axis. 
+
+obama_ratings_line <- gather(obama_ratings, key = "Rating", value = "Percentage", -Issue)
+
+ggplot(obama_ratings_line, aes(x = Issue, y = Percentage, color = Rating, group = Rating)) +
+  geom_line(size = 1.3) +
+  labs(title = "Obama Political Issue Rating Percentages",
+       x = "Political Issue",
+       y = "Rating Percentage",
+       color = "Rating") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_color_manual(values = c("purple", "green", "cyan"))
+```
+

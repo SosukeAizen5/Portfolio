@@ -1,0 +1,111 @@
+---
+title: "Excessively More Charts Assignment"
+author: "David Berberena"
+date: "2024-08-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Program Start
+
+```{r}
+# To craft the necessary charts, I will need to import my datasets, which will 
+# be both datasets from the Exercise 6.2 Datasets file folder. I have saved the 
+# edited files to my directory and will read them in here using readr, which 
+# will be loaded now along with ggplot2, the libraries I have chosen to use to
+# output all of the visualizations needed: a histogram, a box plot, a bullet 
+# chart, and another chart.
+
+# Upload readr library for file importing along with ggplot2 to visualize the charts
+
+library(readr)
+library(ggplot2)
+
+# Set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 640 Data Presentation and Visualization")
+
+# I will import the Education and Crime datasets here.
+
+education <- read_csv("education.csv", show_col_types = FALSE)
+crime <- read_csv("crimeratesbystate-formatted.csv", show_col_types = FALSE)
+
+# The head() function is used here to verify that the data has been loaded in
+# correctly.
+
+print(head(education))
+print(head(crime))
+```
+## Visualization 1: Histogram
+
+```{r}
+# The histogram for the 'reading' variable in the Education dataset is crafted 
+# here. The geom_histogram() function of ggplot() is used to visualize the 
+# histogram needed and uses the same settings as the one in Python (the chart 
+# looks different due to R's interpretation of bin sizes). 
+
+ggplot(education, aes(x = reading)) + geom_histogram(bins = 20, fill = 'purple', color = 'purple') + labs(title = 'Histogram of Reading Scores in Education', x = 'Scores', y = 'Frequency')
+```
+
+## Visualization 2: Box Plot
+
+```{r}
+# To mimic the box plot crafted in Python, I will plot the math scores in the 
+# Education dataset using the geom_boxplot() function within ggplot2. 
+
+ggplot(education, aes(y = math)) + geom_boxplot(fill = 'green', color = 'black') + labs(title = 'Box Plot of Math Scores in Education', y = 'Scores')
+```
+
+## Visualization 3: Bullet Chart
+
+```{r}
+# To craft a similar bullet chart to the one previously made in Python depicting
+# the murder rates by state from the Crime dataset, I can use the geom_bar() 
+# function multiple times to plot different aspects of the dataset after being transformed to accommodate the necessary elements of the bullet chart (ranges, 
+# target, etc.) as well as geom_point(). To display a legend correctly, I 
+# employed the scale_color_manual() and scale_fill_manual() functions to name 
+# the legend elements along with their colors explicitly. For the y-axis not to 
+# become unreadable, I adjusted the labels using the angle argument of
+# element_text(). To copy the Python bullet chart as it was rendered using a 
+# multitude of horizontal bar charts, I used the coord_flip() function here to 
+# turn the current bar chart construction into a horizontal bar chart plane.
+
+crime$target <- mean(crime$murder)
+crime$low_range <- 4.0
+crime$mid_range <- 8.0
+crime$high_range <- 40.0
+
+murder_bullet_chart <- ggplot(crime, aes(x = reorder(state, murder))) + geom_bar(aes(y = high_range, fill = 'High'), stat = 'identity', width = 0.8, color = 'white', fill = 'orange') + geom_bar(aes(y = mid_range, fill = 'Medium'), stat = 'identity', width = 0.8, color = 'white', fill = 'yellow') + geom_bar(aes(y = low_range, fill = 'Low'), stat = 'identity', width = 0.8, color = 'white', fill = 'green') + geom_bar(aes(y = murder, fill = 'Murder Rate'), stat = 'identity', width = 0.4, color = 'blue') + geom_point(aes(y = target, color = 'Target'), size = 1, fill = 'red') + scale_fill_manual(name = 'Legend', values = c('Murder Rate' = 'blue')) + scale_color_manual(name = 'Marker', values = c('Target' = 'red', 'Murder Rate' = 'blue')) + labs(title = 'Bullet Chart of Murder Rates by State in Crime', x = 'State', y = 'Murder Rate') + theme(legend.position = "bottom", axis.text.y = element_text(angle = 45, hjust = 1, vjust = 0.5)) + coord_flip()
+
+murder_bullet_chart
+```
+
+## Visualization 4: Stacked Line Chart
+
+```{r}
+# To create the stacked line chart using the Education dataset to show the 
+# reading, math, and writing scores like in Python, a slightly different 
+# approach is to be taken. I will load in the dplyr and tidyr packages to use a
+# pipeline that utilizes the pivot_longer() function to format the data for the
+# chart constructor functions to use. I also will create a vector containing 
+# the colors I wish to use for each subject when visualizing them.
+
+library(dplyr)
+library(tidyr)
+
+subjects_formatted <- education %>% pivot_longer(cols = c(reading, math, writing), names_to = "Subject", values_to = "Score")
+
+subject_colors <- c("reading" = "purple", "math" = "green", "writing" = "pink")
+
+# I can use the geom_area() function (with the position argument set to 'stack'
+# in ggplot2 to craft the stacked line chart. I will also place the colors and
+# subjects into a legend using the scale_fill_manual() and scale_color_manual()
+# functions like in the previous visualization.
+
+ggplot(subjects_formatted, aes(x = state, y = Score, color = Subject, group = Subject)) + geom_area(aes(fill = Subject), alpha = 0.5, position = 'stack') +
+scale_fill_manual(values = subject_colors) + scale_color_manual(values = subject_colors) + labs(title = "Stacked Line Chart of Reading, Math, and Writing Scores in Education", x = "State", y = "Scores") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+

@@ -1,0 +1,127 @@
+---
+title: "Abundantly More Charts Assignment"
+author: "David Berberena"
+date: "2024-07-28"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Program Start
+
+```{r}
+# To craft the necessary charts, I will need to import my datasets, which will 
+# be both datasets from the Exercise 5.2 Datasets file folder. I have saved the 
+# edited files to my directory and will read them in here using readr, which 
+# will be loaded now along with ggplot2 and pheatmap, the libraries I have 
+# chosen to use to output all of the visualizations needed: a heatmap, a spatial
+# chart, and a lollipop chart.
+
+# Upload readr library for file importing along ggplot2 to visualize the charts
+
+library(readr)
+library(ggplot2)
+
+# Set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 640 Data Presentation and Visualization")
+
+# I will import the transformed NBA and Costco locations datasets here.
+
+ppg_stats <- read_csv("ppg_stats.csv", show_col_types = FALSE)
+ppg_top_10 <- read_csv("ppg_top_10.csv", show_col_types = FALSE)
+costco_200 <- read_csv("200_costco_loc_geocoded.csv", show_col_types = FALSE)
+ppg <- read_csv("ppg2008.csv", show_col_types = FALSE)
+
+# The head() function is used here to verify that the data has been loaded in
+# correctly.
+
+head(ppg_stats)
+```
+```{r}
+head(ppg_top_10)
+```
+```{r}
+head(costco_200)
+```
+## Visualization 1: Heatmap
+
+```{r warning=FALSE}
+# To create a heatmap, which focuses on outputting the correlation coefficients 
+# of each variable relative to the other variables within a dataset, I will use 
+# the pheatmap library and the function of the same name. This will realize the
+# correlation statistics for each variable. I will compute the correlation 
+# matrix needed for the heatmap by utilizing the cor() function. 
+
+library(pheatmap)
+
+player_stats <- cor(ppg_stats)
+
+# The heatmap is now created using the correlation matrix, with the cluster_rows
+# and cluster_cols arguments set to True to see the variable names on the chart.
+    
+pheatmap(player_stats, 
+         cluster_rows = TRUE, 
+         cluster_cols = TRUE, 
+         main = "Heatmap of Basketball Player Stats")
+```
+
+## Visualization 2: Spatial Chart
+
+```{r message=FALSE}
+# To craft a spatial chart in R, the sf package is needed as well as
+# ggplot2. The sf package is necessary to transform a DataFrame 
+# containing latitude and longitude values into spatial data which is 
+# compatible with spatial charts. Ggplot2 will craft the spatial chart using the
+# geom_sf() customization function. I will import the sf package here.
+
+library(sf)
+
+# I will load in my previously acquired shapefile of the world map to use in the
+# spatial chart here. 
+
+world <- st_read('ne_110m_admin_0_countries.shp')
+
+# The Costco locations dataset must also be transformed into spatial data for 
+# ggplot2 to use. To do this, the st_as_sf() function from the sf package will 
+# be employed here. After researching on spatial data and how the coordinates 
+# are recognized in R, the crs (coordinate reference system) argument must be
+# set. As the latitude and longitude coordinates are in WGS 84 (World 
+# Geodetic System 1984) format, the corresponding argument input is 4326. 
+
+costco_spatial <- st_as_sf(costco_200, coords = c("Longitude", "Latitude"), 
+                           crs = 4326)
+
+# The spatial chart can now be created. As I now have two instances of spatial 
+# data (world map and the Costco locations dataset), I need to plot them both 
+# using geom_sf() within the same plane. This will replicate the chart that was 
+# made in Python.
+
+ggplot() +
+  geom_sf(data = world) +
+  geom_sf(data = costco_spatial, color = "blue", size = 2) +
+  labs(title = "Spatial Chart of Costco Locations (First 200 Locations Listed)",
+       x = "Longitude", y = "Latitude")
+```
+
+## Visualization 3: Lollipop Chart
+
+```{r}
+# In R, the key to creating a lollipop chart is ggplot2's geom_segment() 
+# function combined with the geom_point() function. To mimic the lollipop chart 
+# in Python, I will reorder the points per game values so they are displayed in
+# descending order using the reorder() function and adding the "-" operator to
+# the PTS variable.
+
+ggplot(ppg_top_10, aes(x = reorder(Name  , -PTS), y = PTS)) +
+  geom_segment(aes(x = reorder(Name  , -PTS), xend = Name  , y = 0, 
+                   yend = PTS), color = "blue") +
+  geom_point(size = 5, color = "blue") +
+  labs(title = 'NBA Basketball Players Points Per Game Comparison',
+       x = 'Basketball Player',
+       y = 'Points per Game (PTS)') +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+

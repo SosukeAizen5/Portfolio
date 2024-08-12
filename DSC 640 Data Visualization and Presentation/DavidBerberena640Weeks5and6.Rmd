@@ -1,0 +1,96 @@
+---
+title: "Additional Charts Assignment"
+author: "David Berberena"
+date: "2024-07-14"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Program Start
+
+```{r message=FALSE}
+# To craft the necessary charts, I will need to import my dataset, which I have
+# chosen to be the Life Expectancy dataset from the Exercise 4.2 Datasets file 
+# folder. I have saved that file to my directory and will read it in here using 
+# readr, which will be imported now along with ggplot2, the package I have 
+# chosen to use to output all of the visualizations needed: a scatter plot, a 
+# bubble chart, and a density plot.
+
+# Upload readr library for file importing along ggplot2 to visualize the charts
+
+library(readr)
+library(ggplot2)
+
+# Set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 640 Data Presentation and Visualization")
+
+# I will import the life expectancy dataset here.
+
+life <- read_csv("life-expectancy.csv", show_col_types = FALSE)
+
+# The head() function is used here to verify that the data has been loaded in
+# correctly.
+
+head(life)
+```
+
+## Visualization 1: Scatter Plot
+
+```{r}
+# For the scatter plot, I will construct the chart using the geom_point() 
+# function to visualize the relationship between the country's life 
+# expectancies. As the dataset contains many observations, I will use the head()
+# function to capture only the first 30 countries listed. I needed to adjust the 
+# x-axis labels, as the country names needed to be rotated and seen individually
+# as opposed to overlapping one another. This was accomplished with the 
+# axis.text.x argument of the theme() customization so that the labels on the 
+# x-axis would be seen much easier. This mimics Python's 
+# plt.xticks(rotation = 45, ha = "right") setting in Matplotlib.
+
+top_30_life = head(life, n = 30)
+
+ggplot(top_30_life, aes(x = country, y = expectancy)) +
+  geom_point(color = "blue") +
+  ggtitle("Scatter Plot of 2008 Life Expectancy by Country (First 30 Alphabetically)") +
+  xlab("Country") +
+  ylab("Life Expectancy in Years") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Visualization 2: Bubble Chart
+
+```{r}
+# A bubble chart in R can be made almost exactly in the same way as a scatter 
+# plot is created. I crafted the chart the same way except the size argument and
+# the alpha argument are needed to establish the bubble size and the 
+# transparency of the bubbles. A bubble chart is different from a scatter plot 
+# as it involves a third variable that controls the size of each data point, yet
+# the third variable in this dataset is the year, which is the same across all 
+# observations. This means that the chart's data points will all be the same 
+# size.
+
+ggplot(top_30_life, aes(x = country, y = expectancy)) +
+  geom_point(size = 10, alpha = 0.5, color = "green") +
+  ggtitle("Bubble Chart of 2008 Life Expectancy by Country (First 30 Alphabetically)") +
+  xlab("Country") +
+  ylab("Life Expectancy in Years") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Visualization 3: Density Plot
+
+```{r}
+# To craft the density plot, I will be using the geom_density() function in 
+# ggplot(), which is made to craft a density plot. Upon making the plot, I 
+# included the fill argument to enhance readability. 
+
+ggplot(top_30_life, aes(x = expectancy)) +
+  geom_density(fill = "red", alpha = 0.5) +
+  ggtitle("Density Plot of 2008 Life Expectancy by Country (First 30 Alphabetically)") +
+  xlab("Life Expectancy in Years") +
+  ylab("Density")
+```

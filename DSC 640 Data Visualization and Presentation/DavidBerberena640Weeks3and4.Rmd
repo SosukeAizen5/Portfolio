@@ -1,0 +1,130 @@
+---
+title: "More Charts Assignment"
+author: "David Berberena"
+date: "2024-06-19"
+output: pdf_document
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# More Charts Assignment
+
+```{r message=FALSE}
+# To craft the necessary charts, I will need to import my dataset, which I have
+# chosen to be the Unemployment Rates dataset from the Exercise 2.2 Datasets
+# file folder. I have saved that file to my directory and will read it in here
+# using readr, which will be imported now along with ggplot2 and treemap,
+# the libraries I have chosen to use to output all of the visualizations needed:
+# a tree map, an area chart, a stacked area chart, and a step chart.
+
+# Upload readr library for file importing along with the two visualization 
+# libraries
+
+library(readr)
+library(ggplot2)
+library(treemap)
+
+# Set working directory for smooth file importing
+
+setwd("C:/Users/dbzda/Documents/School/DSC 640 Data Presentation and Visualization")
+
+# I will import the transformed unemployment CSV file from Jupyter Notebook.
+
+unemployment <- read_csv("unemployment_ratings.csv", show_col_types = FALSE)
+
+# The head() function is used here to verify that the data has been loaded in
+# correctly.
+
+head(unemployment)
+```
+## Visualization 1: Tree Map
+
+```{r}
+# Here is the construction of the tree map using the treemap() function. As
+# the dataset takes into account multiple years of unemployment, I have chosen
+# to plot only the first year listed, which is 1948. This encompasses the first
+# twelve observations, so the head() function specifying 12 as the argument is
+# used to capture that year's unemployment rates to see each month's rate
+# proportionate to each other and to the whole year.
+
+rates_1948 = head(unemployment, n = 12)
+
+write.csv(rates_1948, file = 'unemployment_1948.csv', row.names = FALSE)
+
+treemap(rates_1948, index = "Period", vSize = "Value", 
+        title = "Treemap of 1948 Unemployment Rates")
+```
+## Visualization 2: Area Chart
+
+```{r}
+# Using the same year (1948) as the previous visualization, I will craft an area
+# chart using ggplot2's geom_area() function for the shading beneath the line
+# showing the unemployment rate trend for that year created with the geom_line()
+# function. I converted the 'Period' variable to a factor with levels so the
+# area chart can properly use the months within that variable.
+
+rates_1948$Period <- factor(rates_1948$Period, 
+                            levels = c("January", "February", "March", "April",
+                                       "May", "June", "July", "August",
+                                       "September", "October", "November",
+                                       "December"))
+
+# Upon construction of the area chart, I added the axis.text.x argument of the 
+# theme() customization so that the month labels on the x-axis would be seen 
+# much easier. This mimics Python's plt.xticks(rotation = 45) setting in 
+# Matplotlib. 
+
+ggplot(rates_1948, aes(x = Period, y = Value, group = 1)) +
+  geom_area(fill = "green") +
+  geom_line(color = "darkgreen") +
+  labs(title = "Area Chart of 1948 Unemployment Rates",
+       x = "Month",
+       y = "Percent Rate of Unemployment") + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+## Visualization 3: Stacked Area Chart
+
+```{r}
+# Here in R the creation of a stacked area chart is much simpler than in Python.
+# I have replicated the subsetting of the two years needed for the stacked area 
+# chart crafting using the subset() function and I have ordered both the Period
+# and Year variables using the factor() function and the $ operator. 
+
+rates_1950_1951 <- subset(unemployment, Year == 1950 | Year == 1951)
+
+write.csv(rates_1950_1951, file = 'unemployment_1950_1951.csv', row.names = FALSE)
+
+rates_1950_1951$Period <- factor(rates_1950_1951$Period, 
+                                 levels = c("January", "February", "March", 
+                                            "April", "May", "June", "July", 
+                                            "August", "September", "October", 
+                                            "November", "December"))
+
+rates_1950_1951$Year <- factor(rates_1950_1951$Year, 
+                                 levels = c("1950", "1951"))
+
+# To write the stacked area chart code block, it is almost identical to the 
+# previous area chart construction save for the addition of the position 
+# argument being set to stack within the geom_area() customization function. 
+
+ggplot(rates_1950_1951, aes(x = Period, y = Value, fill = Year, group = Year)) +
+  geom_area(position = "stack") + 
+  labs(title = "Stacked Area Chart of 1950 and 1951 Unemployment Rates",
+       x = "Month",
+       y = "Percent Rate of Unemployment") + 
+  theme(axis.text.x = element_text(angle = 45))
+```
+## Visualization 4: Step Chart
+
+```{r}
+# Step charts are easily made with the geom_step() customization argument of the
+# ggplot() function in ggplot2. Using the 1948 subset of observations I have already created, I will craft the chart here.
+
+ggplot(rates_1948, aes(x = Period, y = Value, group = Year)) + 
+  geom_step(color = 'yellow', linewidth = 2) + 
+  labs(title = "Area Chart of 1948 Unemployment Rates", x = "Month", y = "Percent Rate of Unemployment") + 
+  theme(axis.text.x = element_text(angle = 45))
+```
